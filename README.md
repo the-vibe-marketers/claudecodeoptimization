@@ -43,6 +43,18 @@ cc-budget  # Check your configured budget
 
 ---
 
+## ⚠️ Important Note for Existing Users
+
+If you already use Claude Code with a **Claude subscription (Pro/Max)**, our Haiku default may not override your account settings.
+
+**To use full optimization:**
+- Option A: Use Haiku model manually in each session
+- Option B: Switch to **Anthropic Console API billing** for complete automation
+
+For best results, we recommend **API billing** so all optimizations work perfectly.
+
+---
+
 ## 📋 What Gets Installed
 
 After running `setup.sh`, you get:
