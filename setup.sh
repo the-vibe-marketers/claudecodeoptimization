@@ -283,6 +283,54 @@ else
     echo -e "${YELLOW}⚠️  Aliases already present in $shell_config${NC}"
 fi
 
+# Setup 6-hour token cost alerts via cron
+echo ""
+echo -e "${BLUE}Step 6: Setting Up 6-Hour Cost Alerts${NC}"
+echo ""
+
+# Create alert script in hooks directory
+cat > "$HOME/.claude/hooks/token-6hour-alert.sh" << 'EOF'
+#!/bin/bash
+# Claude Code 6-Hour Token & Cost Alert
+BUDGET=$(grep -o '"monthly_limit_usd"[^,]*' "$HOME/.claude.json" | grep -o '[0-9]*' | head -1)
+SESSION_FILE="$HOME/.claude/.session_tokens.json"
+[ ! -f "$SESSION_FILE" ] && exit 0
+SESSION_DATA=$(cat "$SESSION_FILE")
+TOKENS_USED=$(echo "$SESSION_DATA" | grep -o '"tokensUsed"[^,]*' | grep -o '[0-9]*' | head -1)
+COST_SO_FAR=$(echo "$SESSION_DATA" | grep -o '"costSoFar"[^,]*' | grep -o '[0-9.]*' | head -1)
+OPERATIONS=$(echo "$SESSION_DATA" | grep -o '"operation"' | wc -l)
+PERCENT_USED=$(echo "scale=1; ($COST_SO_FAR / $BUDGET) * 100" | bc 2>/dev/null || echo "0.0")
+echo ""
+echo "═══════════════════════════════════════════════════════════"
+echo "   🕐 6-HOUR TOKEN & COST REPORT"
+echo "═══════════════════════════════════════════════════════════"
+echo ""
+echo "   Tokens Used: ${TOKENS_USED:=0}"
+echo "   Operations: $OPERATIONS actions"
+echo "   Cost So Far: \$$COST_SO_FAR"
+echo "   Budget: \$$BUDGET/month"
+echo "   Used: ${PERCENT_USED}%"
+echo "   Remaining: \$$(echo "scale=2; $BUDGET - $COST_SO_FAR" | bc)"
+echo ""
+if (( $(echo "$PERCENT_USED >= 90" | bc -l) )); then
+  echo "   🔴 STATUS: CRITICAL - HIGH USAGE"
+elif (( $(echo "$PERCENT_USED >= 70" | bc -l) )); then
+  echo "   🟡 STATUS: WARNING - 70%+ USED"
+else
+  echo "   🟢 STATUS: HEALTHY - GOOD PACE"
+fi
+echo ""
+echo "═══════════════════════════════════════════════════════════"
+echo ""
+EOF
+
+chmod +x "$HOME/.claude/hooks/token-6hour-alert.sh"
+
+# Add cron job (every 6 hours: at 12am, 6am, 12pm, 6pm)
+(crontab -l 2>/dev/null | grep -v "token-6hour-alert" || true; echo "0 0,6,12,18 * * * $HOME/.claude/hooks/token-6hour-alert.sh") | crontab - 2>/dev/null && \
+echo -e "${GREEN}✓ 6-hour cost alerts enabled${NC}" || \
+echo -e "${YELLOW}⚠️  Could not set up cron (optional - you can run alerts manually)${NC}"
+
 # Summary
 echo ""
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
