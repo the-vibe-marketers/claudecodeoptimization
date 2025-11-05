@@ -1,0 +1,48 @@
+{
+  "default_model": "claude-haiku-4-5-20251001",
+  "token_budget": {
+    "monthly_limit_usd": 200,
+    "alert_thresholds": {
+      "yellow": 0.70,
+      "red": 0.90,
+      "hard_stop": 1.0
+    },
+    "check_before_expensive_ops": true,
+    "auto_suggest_optimization": true,
+    "show_cost_per_operation": true
+  },
+  "file_reading_rules": {
+    "warn_on_file_size_above_kb": 500,
+    "auto_limit_large_files": true,
+    "default_chunk_size_kb": 50,
+    "preferred_tools_for_large_files": ["grep", "glob"],
+    "grep_before_read": true
+  },
+  "model_selection_rules": {
+    "default": "claude-haiku-4-5-20251001",
+    "auto_suggest_sonnet_indicators": [
+      "refactor",
+      "architecture",
+      "design",
+      "multiple files",
+      "complex"
+    ],
+    "require_confirmation": ["opus"],
+    "warn_on_model_switch": true
+  },
+  "safeguards": {
+    "max_tokens_per_grep": 10000,
+    "max_tokens_per_read": 50000,
+    "max_files_per_glob": 1000,
+    "max_parallel_operations": 5,
+    "confirm_before_git_push": true,
+    "confirm_before_destructive_ops": true
+  },
+  "shortcut_folders": {
+    "src": "./src",
+    "components": "./src/components",
+    "utils": "./src/utils",
+    "tests": "./__tests__",
+    "config": "./config"
+  }
+}
